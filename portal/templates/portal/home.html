@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tailwebs Teacher Portal - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <span class="text-red-500 text-3xl font-bold block">tailwebs</span>
+                <h1 class="text-2xl font-bold">Teacher Portal</h1>
+            </div>
+            <a href="{% url 'portal:logout' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</a>
+        </div>  
+        <button id="addStudentBtn" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 hover:bg-blue-600">Add New Student</button>
+        <table class="w-full bg-white rounded-lg shadow">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="p-2">Name</th>
+                    <th class="p-2">Subject</th>
+                    <th class="p-2">Marks</th>
+                    <th class="p-2">Action</th>
+                </tr>
+            </thead>
+            <tbody id="studentTable"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal for Adding/Editing Student -->
+    <div id="studentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-full max-w-md">
+            <h2 id="modalTitle" class="text-xl font-bold mb-4"></h2>
+            <div id="modalError" class="hidden text-red-500 mb-4"></div>
+            <form id="studentForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700">Name</label>
+                    <input type="text" id="studentName" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Subject</label>
+                    <input type="text" id="studentSubject" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Marks</label>
+                    <input type="number" id="studentMarks" class="w-full p-2 border rounded" min="0" max="100" required>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="cancelBtn" class="bg-gray-500 text-white px-4 py-2 rounded mr-2 hover:bg-gray-600">Cancel</button>
+                    <button type="submit" id="submitBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden transition-opacity duration-300">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // Initialize editing ID
+        let editingId = null;
+
+        // Display toast notification for 3 seconds
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden', 'opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        }
+
+        // Load students from server and populate table
+        async function loadStudents() {
+            try {
+                const response = await fetch('/students/');
+                if (!response.ok) throw new Error('Failed to fetch students');
+                const students = await response.json();
+                const tbody = document.getElementById('studentTable');
+                tbody.innerHTML = '';
+                students.forEach(student => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-2">${student.name}</td>
+                        <td class="p-2">${student.subject}</td>
+                        <td class="p-2">${student.marks}</td>
+                        <td class="p-2">
+                            <button onclick="editStudent(${student.id}, '${student.name}', '${student.subject}', ${student.marks})" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Edit</button>
+                            <button onclick="deleteStudent(${student.id})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                alert('Error loading students: ' + error.message);
+            }
+        }
+
+        // Open modal for adding/editing student
+        function openModal(title, buttonText, name = '', subject = '', marks = '') {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('submitBtn').textContent = buttonText;
+            document.getElementById('studentName').value = name;
+            document.getElementById('studentSubject').value = subject;
+            document.getElementById('studentMarks').value = marks;
+            document.getElementById('modalError').classList.add('hidden');
+            document.getElementById('studentModal').classList.remove('hidden');
+        }
+
+        // Initialize edit mode with student data
+        async function editStudent(id, name, subject, marks) {
+            editingId = id;
+            openModal('Edit Student', 'Update', name, subject, marks);
+        }
+
+        // Delete student with confirmation
+        async function deleteStudent(id) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                try {
+                    const response = await fetch(`/student/${id}/delete/`, { method: 'POST' });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showToast('Student deleted successfully');
+                        loadStudents();
+                    } else {
+                        alert(data.error);
+                    }
+                } catch (error) {
+                    alert('Error deleting student: ' + error.message);
+                }
+            }
+        }
+
+        // Handle add student button click
+        document.getElementById('addStudentBtn').addEventListener('click', () => {
+            editingId = null;
+            openModal('Add New Student', 'Add');
+        });
+
+        // Handle modal cancel button
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            document.getElementById('studentModal').classList.add('hidden');
+        });
+
+        // Handle student form submission
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('studentName').value.trim();
+            const subject = document.getElementById('studentSubject').value.trim();
+            const marksInput = document.getElementById('studentMarks').value;
+            const modalError = document.getElementById('modalError');
+
+            // Validate marks client-side
+            const marks = parseInt(marksInput, 10);
+            if (isNaN(marks) || marks < 0 || marks > 100) {
+                modalError.textContent = 'Marks must be a number between 0 and 100';
+                modalError.classList.remove('hidden');
+                return;
+            }
+
+            const url = editingId ? `/student/${editingId}/` : '/student/';
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, subject, marks })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('studentModal').classList.add('hidden');
+                    showToast(editingId ? 'Student updated successfully' : 'Student added successfully');
+                    loadStudents();
+                } else {
+                    modalError.textContent = data.error;
+                    modalError.classList.remove('hidden');
+                }
+            } catch (error) {
+                modalError.textContent = 'An error occurred';
+                modalError.classList.remove('hidden');
+            }
+        });
+
+        // Initial load of students
+        loadStudents();
+    </script>
+</body>
+</html>
