@@ -22,7 +22,12 @@ STATICFILES_DIR.mkdir(exist_ok=True)
 # Security settings
 SECRET_KEY = os.environ.get('SECRET_KEY', get_random_secret_key())
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
+# Fix ALLOWED_HOSTS to explicitly include your Render domain
+ALLOWED_HOSTS = ['teacher-portal-6fca.onrender.com', 'localhost', '127.0.0.1', '0.0.0.0']
+
+# Add CSRF trusted origins
+CSRF_TRUSTED_ORIGINS = ['https://teacher-portal-6fca.onrender.com', 'http://localhost:8000']
 
 # Application definition
 INSTALLED_APPS = [

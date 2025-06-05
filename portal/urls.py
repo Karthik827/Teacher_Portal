@@ -1,5 +1,9 @@
 from django.urls import path
-from .views import RegisterView, LoginView, HomeView, StudentListView, AddStudentView, UpdateStudentView, DeleteStudentView, LogoutView
+from .views import (
+    RegisterView, LoginView, HomeView, StudentListView, 
+    AddStudentView, UpdateStudentView, DeleteStudentView, 
+    LogoutView, health_check
+)
 
 app_name = 'portal'
 
@@ -12,4 +16,5 @@ urlpatterns = [
     path('student/<int:id>/', UpdateStudentView.as_view(), name='update_student'),
     path('student/<int:id>/delete/', DeleteStudentView.as_view(), name='delete_student'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('health/', health_check, name='health_check'),
 ]
