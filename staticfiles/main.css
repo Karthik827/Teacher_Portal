@@ -1,0 +1,9 @@
+/* Main CSS file for Teacher Portal */
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+.tailwebs-logo {
+    color: #e53e3e;
+    font-weight: bold;
+}

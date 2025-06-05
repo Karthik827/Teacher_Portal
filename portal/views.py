@@ -14,6 +14,7 @@ import django
 from django.conf import settings
 
 def validate_input(data):
+    """Validates input to contain only alphanumeric characters and spaces."""
     pattern = r'^[a-zA-Z0-9\s]+$'
     for value in data.values():
         if isinstance(value, str) and not re.match(pattern, value):
@@ -22,12 +23,15 @@ def validate_input(data):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(View):
+    """Handles user registration."""
     def get(self, request):
+        """Renders registration page or redirects if authenticated."""
         if request.user.is_authenticated:
-            return redirect('portal:home')  # Use namespace
+            return redirect('portal:home')  
         return render(request, 'portal/register.html')
 
     def post(self, request):
+        """Processes registration form data."""
         try:
             data = json.loads(request.body)
             username = data.get('username')
@@ -48,12 +52,15 @@ class RegisterView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(View):
+    """Handles user login."""
     def get(self, request):
+        """Renders login page or redirects if authenticated."""
         if request.user.is_authenticated:
-            return redirect('portal:home')  # Use namespace, changed from 'login' to avoid loop
+            return redirect('portal:home')  
         return render(request, 'portal/login.html')
 
     def post(self, request):
+        """Processes login form data."""
         try:
             data = json.loads(request.body)
             username = data.get('username')
@@ -69,22 +76,28 @@ class LoginView(View):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
 class HomeView(View):
+    """Displays the home page for authenticated users."""
     def get(self, request):
+        """Renders home page or redirects to login."""
         if not request.user.is_authenticated:
-            return redirect('portal:login')  # Use namespace
+            return redirect('portal:login')  
         return render(request, 'portal/home.html')
 
 class StudentListView(View):
+    """Returns a list of all students."""
     def get(self, request):
+        """Returns JSON list of students."""
         if not request.user.is_authenticated:
-            return redirect('portal:login')  # Use namespace
+            return redirect('portal:login')  
         students = Student.objects.all().values('id', 'name', 'subject', 'marks')
         return JsonResponse(list(students), safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AddStudentView(View):
+    """Adds a new student or updates existing student."""
     @method_decorator(require_POST)
     def post(self, request):
+        """Processes add student request."""
         if not request.user.is_authenticated:
             return JsonResponse({'error': 'Unauthorized'}, status=401)
         try:
@@ -119,8 +132,10 @@ class AddStudentView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UpdateStudentView(View):
+    """Updates an existing student."""
     @method_decorator(require_POST)
     def post(self, request, id):
+        """Processes update student request."""
         if not request.user.is_authenticated:
             return JsonResponse({'error': 'Unauthorized'}, status=401)
         try:
@@ -153,8 +168,10 @@ class UpdateStudentView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteStudentView(View):
+    """Deletes an existing student."""
     @method_decorator(require_POST)
     def post(self, request, id):
+        """Processes delete student request."""
         if not request.user.is_authenticated:
             return JsonResponse({'error': 'Unauthorized'}, status=401)
         try:
@@ -165,29 +182,27 @@ class DeleteStudentView(View):
             return JsonResponse({'error': 'Student not found'}, status=404)
 
 class LogoutView(View):
+    """Handles user logout."""
     def get(self, request):
+        """Logs out user and redirects to login page."""
         logout(request)
-        return redirect('portal:login')  # Use namespace
+        return redirect('portal:login')  
 
 def health_check(request):
-    """
-    A simple view to verify the application is working
-    """
+    """Simple health check endpoint."""
     return HttpResponse("OK", content_type="text/plain")
 
-def debug_info(request):
-    """
-    A view that returns debug information about the environment
-    """
-    info = [
-        f"Python version: {sys.version}",
-        f"Django version: {django.get_version()}",
-        f"ALLOWED_HOSTS: {settings.ALLOWED_HOSTS}",
-        f"DEBUG: {settings.DEBUG}",
-        f"Request META: {request.META.get('HTTP_HOST', 'unknown')}",
-        f"Request path: {request.path}",
-        f"Request method: {request.method}",
-        f"Request is secure: {request.is_secure()}",
-        f"Request headers: {dict(request.headers)}",
-    ]
-    return HttpResponse("<br>".join(info), content_type="text/html")
+# def debug_info(request):
+#     """Returns debug information about the environment."""
+#     info = [
+#         f"Python version: {sys.version}",
+#         f"Django version: {django.get_version()}",
+#         f"ALLOWED_HOSTS: {settings.ALLOWED_HOSTS}",
+#         f"DEBUG: {settings.DEBUG}",
+#         f"Request META: {request.META.get('HTTP_HOST', 'unknown')}",
+#         f"Request path: {request.path}",
+#         f"Request method: {request.method}",
+#         f"Request is secure: {request.is_secure()}",
+#         f"Request headers: {dict(request.headers)}",
+#     ]
+#     return HttpResponse("<br>".join(info), content_type="text/html")
