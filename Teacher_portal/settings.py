@@ -15,6 +15,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / 'static'
 STATIC_DIR.mkdir(exist_ok=True)
 
+# Create staticfiles directory if it doesn't exist
+STATICFILES_DIR = BASE_DIR / 'staticfiles'
+STATICFILES_DIR.mkdir(exist_ok=True)
+
 # Security settings
 SECRET_KEY = os.environ.get('SECRET_KEY', get_random_secret_key())
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
@@ -93,7 +97,7 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [STATIC_DIR]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
