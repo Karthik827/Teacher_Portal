@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Create static directory and collect static files
+RUN mkdir -p static && python manage.py collectstatic --noinput
 
 # Run gunicorn
 CMD gunicorn Teacher_portal.wsgi:application --bind 0.0.0.0:$PORT
