@@ -52,14 +52,11 @@ class TeacherManager(BaseUserManager):
 class Teacher(AbstractBaseUser, PermissionsMixin):
     """
     Custom user model representing a teacher.
-
-    Attributes:
-        username (CharField): Unique username, max length 150 characters.
-        is_active (BooleanField): Whether the user is active.
-        is_staff (BooleanField): Whether the user has admin access.
-        date_joined (DateTimeField): When the user was created.
     """
     username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(blank=True)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -74,25 +71,22 @@ class Teacher(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = 'teachers'
 
     def __str__(self):
-        """Return string representation of the teacher."""
         return self.username
 
 class Student(models.Model):
     """
     Model representing a student with name, subject, and marks.
-
-    Attributes:
-        name (CharField): Student's name, max length 100 characters.
-        subject (CharField): Subject name, max length 100 characters.
-        marks (IntegerField): Student's marks for the subject.
     """
     name = models.CharField(max_length=100)
     subject = models.CharField(max_length=100)
     marks = models.IntegerField()
+    # If you want to add these fields:
+    # email = models.EmailField(blank=True)
+    # phone = models.CharField(max_length=15, blank=True)
+    # teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         unique_together = ('name', 'subject')
 
     def __str__(self):
-        """Return string representation of the student."""
         return f"{self.name} - {self.subject}"
