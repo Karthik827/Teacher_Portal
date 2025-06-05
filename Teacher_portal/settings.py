@@ -19,15 +19,21 @@ STATIC_DIR.mkdir(exist_ok=True)
 STATICFILES_DIR = BASE_DIR / 'staticfiles'
 STATICFILES_DIR.mkdir(exist_ok=True)
 
+# Add ASGI application
+ASGI_APPLICATION = 'Teacher_portal.asgi.application'
+
 # Security settings
 SECRET_KEY = os.environ.get('SECRET_KEY', get_random_secret_key())
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# Fix ALLOWED_HOSTS to explicitly include your Render domain
-ALLOWED_HOSTS = ['teacher-portal-6fca.onrender.com', 'localhost', '127.0.0.1', '0.0.0.0']
+# Fix ALLOWED_HOSTS to explicitly include your Render domain and all possible hosts
+ALLOWED_HOSTS = ['*']
 
 # Add CSRF trusted origins
 CSRF_TRUSTED_ORIGINS = ['https://teacher-portal-6fca.onrender.com', 'http://localhost:8000']
+
+# Add secure proxy header setting
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 INSTALLED_APPS = [

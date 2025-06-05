@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: teacher-portal
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: uvicorn Teacher_portal.asgi:application --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://teacher-portal-6fca.onrender.com,http://localhost:8000"
+      - key: PYTHON_VERSION
+        value: 3.9.16

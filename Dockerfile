@@ -12,6 +12,7 @@ WORKDIR /app
 # Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install uvicorn
 
 # Copy project
 COPY . .
@@ -19,5 +20,6 @@ COPY . .
 # Create static directory and collect static files
 RUN mkdir -p static && python manage.py collectstatic --noinput
 
-# Run gunicorn
-CMD gunicorn Teacher_portal.wsgi:application --bind 0.0.0.0:$PORT
+# Run uvicorn instead of gunicorn
+CMD uvicorn Teacher_portal.asgi:application --host 0.0.0.0 --port $PORT
+

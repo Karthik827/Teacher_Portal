@@ -1,6 +1,6 @@
 from django.views import View
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from .models import Teacher, Student
 from django.views.decorators.http import require_POST
@@ -8,6 +8,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import re
 import json
+import os
+import sys
+import django
+from django.conf import settings
 
 def validate_input(data):
     pattern = r'^[a-zA-Z0-9\s]+$'
@@ -164,3 +168,26 @@ class LogoutView(View):
     def get(self, request):
         logout(request)
         return redirect('portal:login')  # Use namespace
+
+def health_check(request):
+    """
+    A simple view to verify the application is working
+    """
+    return HttpResponse("OK", content_type="text/plain")
+
+def debug_info(request):
+    """
+    A view that returns debug information about the environment
+    """
+    info = [
+        f"Python version: {sys.version}",
+        f"Django version: {django.get_version()}",
+        f"ALLOWED_HOSTS: {settings.ALLOWED_HOSTS}",
+        f"DEBUG: {settings.DEBUG}",
+        f"Request META: {request.META.get('HTTP_HOST', 'unknown')}",
+        f"Request path: {request.path}",
+        f"Request method: {request.method}",
+        f"Request is secure: {request.is_secure()}",
+        f"Request headers: {dict(request.headers)}",
+    ]
+    return HttpResponse("<br>".join(info), content_type="text/html")
